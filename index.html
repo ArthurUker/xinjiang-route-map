@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>北疆自驾线路图</title>
+    <title>12月北疆冬季自驾线路图</title>
     <style>
         * {
             margin: 0;
@@ -15,6 +15,7 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             height: 100vh;
             overflow: hidden;
+            background: #f5f5f5;
         }
         
         #container {
@@ -30,119 +31,737 @@
             padding: 20px;
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-            max-width: 320px;
-            max-height: 80vh;
+            max-width: 380px;
+            max-height: 85vh;
             overflow-y: auto;
             z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .info-panel.collapsed {
+            max-height: auto;
+            overflow: visible;
+        }
+
+        .info-panel.collapsed .collapsible-content {
+            display: none;
         }
         
         .info-panel h1 {
-            font-size: 24px;
+            font-size: 22px;
             color: #1a1a1a;
             margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .info-panel .subtitle {
-            font-size: 14px;
+            font-size: 13px;
             color: #666;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+            line-height: 1.5;
         }
         
-        .route-info {
-            margin-bottom: 20px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #eee;
+        .route-summary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
         }
         
-        .route-info h3 {
-            font-size: 16px;
-            color: #333;
-            margin-bottom: 10px;
-        }
-        
-        .route-info p {
+        .route-summary h3 {
             font-size: 14px;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .summary-item {
+            font-size: 13px;
+        }
+        
+        .summary-item strong {
+            display: block;
+            font-size: 18px;
+            margin-top: 4px;
+        }
+
+        .toggle-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s;
+            margin-bottom: 15px;
+        }
+
+        .toggle-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .toggle-btn .arrow {
+            transition: transform 0.3s;
+            font-size: 16px;
+        }
+
+        .info-panel.collapsed .toggle-btn .arrow {
+            transform: rotate(180deg);
+        }
+
+        .view-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .view-btn {
+            flex: 1;
+            padding: 10px;
+            background: #f0f0f0;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #666;
+        }
+
+        .view-btn:hover {
+            background: #e3f2fd;
+            border-color: #2196F3;
+        }
+
+        .view-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .budget-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .budget-section h3 {
+            font-size: 15px;
+            color: #333;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .budget-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .budget-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .budget-label {
+            color: #555;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .budget-value {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .budget-total {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            font-weight: bold;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .budget-note {
+            font-size: 11px;
+            color: #666;
+            margin-top: 8px;
+            line-height: 1.5;
+            padding: 8px;
+            background: #fff3cd;
+            border-radius: 4px;
+        }
+        
+        .day-section {
+            margin-bottom: 15px;
+            border-left: 3px solid #ddd;
+            padding-left: 12px;
+            transition: all 0.3s;
+        }
+
+        .day-section.active {
+            border-left-color: #4CAF50;
+            background: #f0f8ff;
+            padding: 8px;
+            padding-left: 12px;
+            border-radius: 0 8px 8px 0;
+            margin-left: -8px;
+        }
+        
+        .day-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            cursor: pointer;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+        
+        .day-header:hover {
+            background: #e3f2fd;
+            transform: translateX(5px);
+        }
+
+        .day-section.active .day-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .day-section.active .day-title {
+            color: white;
+        }
+
+        .day-section.active .day-badge {
+            background: white;
+            color: #667eea;
+        }
+        
+        .day-title {
+            font-weight: 600;
+            font-size: 15px;
+            color: #333;
+        }
+        
+        .day-badge {
+            background: #4CAF50;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+        
+        .route-details {
+            margin-top: 8px;
+            font-size: 13px;
             color: #666;
             line-height: 1.6;
         }
         
-        .stops-list {
-            list-style: none;
+        .route-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 6px 0;
+            padding: 6px;
+            background: #fff;
+            border-radius: 4px;
+            border: 1px solid #eee;
         }
         
-        .stop-item {
-            padding: 12px;
-            margin-bottom: 8px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-            border-left: 4px solid #4CAF50;
+        .route-icon {
+            font-size: 16px;
         }
         
-        .stop-item:hover {
-            background: #e8f5e9;
-            transform: translateX(4px);
-        }
-        
-        .stop-item.active {
-            background: #4CAF50;
+        .road-tag {
+            display: inline-block;
+            background: #ff9800;
             color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            margin: 0 4px;
         }
         
-        .stop-name {
-            font-weight: 600;
-            font-size: 15px;
-            margin-bottom: 4px;
-        }
-        
-        .stop-desc {
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 4px;
             font-size: 13px;
-            opacity: 0.8;
+            color: #856404;
+        }
+        
+        .warning-box strong {
+            display: block;
+            margin-bottom: 6px;
+            color: #d32f2f;
+        }
+        
+        .legend {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        
+        .legend h4 {
+            font-size: 13px;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 6px 0;
+            font-size: 12px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 3px;
+            border-radius: 2px;
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            z-index: 2000;
+            font-size: 16px;
+            color: #333;
         }
         
         @media (max-width: 768px) {
             .info-panel {
                 max-width: calc(100% - 40px);
-                max-height: 50vh;
+                max-height: 60vh;
+                font-size: 12px;
             }
+        }
+        
+        .amap-info-content {
+            padding: 10px;
         }
     </style>
 </head>
 <body>
+    <div id="loading" class="loading">🗺️ 正在绘制路线...</div>
     <div id="container"></div>
-    
-    <div class="info-panel">
-        <h1>🚗 北疆自驾线路</h1>
-        <p class="subtitle">探索新疆最美风景线</p>
+
+    <div class="info-panel" id="infoPanel">
+        <h1>❄️ 12月北疆冬季自驾</h1>
+        <p class="subtitle">📅 12月13日-21日 | 👥 2人 | 🚗 SUV推荐<br>珠海→乌鲁木齐往返</p>
         
-        <div class="route-info">
-            <h3>📍 线路概况</h3>
-            <p>总里程：约 2000 公里<br>建议天数：10-12 天<br>最佳季节：6-10 月</p>
+        <div class="route-summary">
+            <h3>📊 行程概况</h3>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    总里程<strong>2380km</strong>
+                </div>
+                <div class="summary-item">
+                    游玩天数<strong>7天6晚</strong>
+                </div>
+                <div class="summary-item">
+                    主要道路<strong>G30/G216</strong>
+                </div>
+                <div class="summary-item">
+                    预算<strong>14200元</strong>
+                </div>
+            </div>
         </div>
-        
-        <h3 style="margin-bottom: 12px; color: #333;">途经站点</h3>
-        <ul class="stops-list" id="stopsList"></ul>
+
+        <div class="view-controls">
+            <button class="view-btn active" onclick="showAllRoutes()">
+                🗺️ 全部路线
+            </button>
+            <button class="view-btn" onclick="clearAllRoutes()">
+                🧹 清空显示
+            </button>
+        </div>
+
+        <button class="toggle-btn" onclick="toggleDetails()">
+            <span id="toggleText">查看详细行程</span>
+            <span class="arrow">▼</span>
+        </button>
+
+        <div class="collapsible-content">
+            <div class="budget-section">
+                <h3>💰 详细预算明细</h3>
+                <div class="budget-item">
+                    <span class="budget-label">✈️ 往返机票</span>
+                    <span class="budget-value">4000元</span>
+                </div>
+                <div class="budget-item">
+                    <span class="budget-label">🚗 租车费用（7天）</span>
+                    <span class="budget-value">2800元</span>
+                </div>
+                <div class="budget-item">
+                    <span class="budget-label">⛽ 油费（约2400km）</span>
+                    <span class="budget-value">1800元</span>
+                </div>
+                <div class="budget-item">
+                    <span class="budget-label">🏨 住宿费用（7晚）</span>
+                    <span class="budget-value">2100元</span>
+                </div>
+                <div class="budget-item">
+                    <span class="budget-label">🎫 门票费用</span>
+                    <span class="budget-value">1500元</span>
+                </div>
+                <div class="budget-item">
+                    <span class="budget-label">🍜 餐饮费用</span>
+                    <span class="budget-value">1400元</span>
+                </div>
+                <div class="budget-item">
+                    <span class="budget-label">🛣️ 高速过路费</span>
+                    <span class="budget-value">400元</span>
+                </div>
+                <div class="budget-item">
+                    <span class="budget-label">🎒 其他杂费</span>
+                    <span class="budget-value">200元</span>
+                </div>
+                <div class="budget-item budget-total">
+                    <span class="budget-label">💵 总计（2人）</span>
+                    <span class="budget-value">14200元</span>
+                </div>
+                <div class="budget-note">
+                    💡 <strong>预算说明：</strong><br>
+                    • 机票：珠海↔乌鲁木齐往返含税<br>
+                    • 租车：四驱SUV（含全险+雪地胎）<br>
+                    • 住宿：经济型酒店标准间<br>
+                    • 门票：天池120+可可托海90+喀纳斯195+魔鬼城46+赛里木湖70+博物馆免费<br>
+                    • 餐饮：人均100元/天
+                </div>
+            </div>
+
+            <div class="warning-box">
+                <strong>⚠️ 冬季安全提示</strong>
+                • 必须租用四驱SUV+雪地胎<br>
+                • 独库公路冬季封闭，已调整路线<br>
+                • 喀纳斯建议参加当地一日游团<br>
+                • 注意路面暗冰，保持安全车距
+            </div>
+            
+            <div id="daysList"></div>
+            
+            <div class="legend">
+                <h4>🗺️ 使用说明</h4>
+                <div style="font-size: 12px; color: #666; line-height: 1.6;">
+                    • 点击任意一天查看该天路线<br>
+                    • 点击"全部路线"显示完整行程<br>
+                    • 点击"清空显示"隐藏所有路线<br>
+                    • 点击标记点查看详细信息
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="https://webapi.amap.com/maps?v=2.0&key=3ca8cc9763f49795910439ccf62e51ae&plugin=AMap.Driving"></script>
     <script>
-        // 线路节点数据
-        const routePoints = [
-            { name: "乌鲁木齐", coord: [87.617733, 43.792818], desc: "起点 - 新疆首府" },
-            { name: "天山天池", coord: [88.136353, 43.883669], desc: "高山湖泊，雪峰倒影" },
-            { name: "富蕴可可托海", coord: [89.524232, 47.168751], desc: "额尔齐斯河大峡谷" },
-            { name: "布尔津", coord: [86.861031, 47.701529], desc: "童话小镇" },
-            { name: "喀纳斯", coord: [87.043465, 48.707302], desc: "神的后花园" },
-            { name: "禾木村", coord: [87.009355, 48.675636], desc: "图瓦人村落" },
-            { name: "克拉玛依魔鬼城", coord: [85.047932, 45.788026], desc: "雅丹地貌奇观" },
-            { name: "赛里木湖", coord: [81.151559, 44.596675], desc: "大西洋最后一滴眼泪" },
-            { name: "伊犁霍城薰衣草", coord: [80.874155, 44.055586], desc: "中国普罗旺斯" },
-            { name: "那拉提草原", coord: [83.696485, 43.333333], desc: "空中草原" },
-            { name: "巴音布鲁克", coord: [84.149542, 43.040251], desc: "九曲十八弯" },
-            { name: "独库公路", coord: [84.149542, 42.5], desc: "中国最美公路" },
-            { name: "乌鲁木齐", coord: [87.617733, 43.792818], desc: "终点 - 返回" }
+        // 详细行程数据
+        const itinerary = [
+            {
+                day: "Day 0",
+                date: "12月13日",
+                title: "抵达乌鲁木齐",
+                distance: "0km",
+                points: [
+                    { name: "乌鲁木齐地窝堡机场", coord: [87.474244, 43.907103], type: "airport" },
+                    { name: "乌鲁木齐市区住宿", coord: [87.617733, 43.792818], type: "hotel" }
+                ],
+                routes: [],
+                details: "21:00抵达机场，入住市区酒店休息",
+                color: "#9E9E9E"
+            },
+            {
+                day: "Day 1",
+                date: "12月14日",
+                title: "乌鲁木齐→天池→富蕴",
+                distance: "470km",
+                time: "6.5小时",
+                points: [
+                    { name: "乌鲁木齐", coord: [87.617733, 43.792818], type: "start" },
+                    { name: "天山天池", coord: [88.136353, 43.883669], type: "scenic" },
+                    { name: "阜康市", coord: [87.984458, 44.161883], type: "pass" },
+                    { name: "富蕴县", coord: [89.524232, 47.168751], type: "hotel" }
+                ],
+                routes: [
+                    { 
+                        path: [
+                            [87.617733, 43.792818],
+                            [87.7, 43.85],
+                            [87.85, 43.88],
+                            [88.136353, 43.883669],
+                            [88.3, 44.1],
+                            [88.5, 44.5],
+                            [88.8, 45.2],
+                            [89.0, 46.0],
+                            [89.3, 46.8],
+                            [89.524232, 47.168751]
+                        ],
+                        road: "G216"
+                    }
+                ],
+                details: "09:00取车出发 → 10:30天池游玩3h → 14:00前往富蕴 → 19:00抵达",
+                color: "#FF5722"
+            },
+            {
+                day: "Day 2",
+                date: "12月15日",
+                title: "富蕴→可可托海→布尔津",
+                distance: "330km",
+                time: "5小时",
+                points: [
+                    { name: "富蕴县", coord: [89.524232, 47.168751], type: "start" },
+                    { name: "可可托海", coord: [89.546631, 47.024872], type: "scenic" },
+                    { name: "布尔津县", coord: [86.861031, 47.701529], type: "hotel" }
+                ],
+                routes: [
+                    {
+                        path: [
+                            [89.524232, 47.168751],
+                            [89.546631, 47.024872]
+                        ],
+                        road: "S226"
+                    },
+                    {
+                        path: [
+                            [89.546631, 47.024872],
+                            [89.3, 47.1],
+                            [88.8, 47.3],
+                            [88.2, 47.5],
+                            [87.5, 47.6],
+                            [86.861031, 47.701529]
+                        ],
+                        road: "G216→S227"
+                    }
+                ],
+                details: "09:00出发 → 10:00可可托海游玩4h → 15:00前往布尔津 → 19:00抵达",
+                color: "#FF5722"
+            },
+            {
+                day: "Day 3",
+                date: "12月16日",
+                title: "布尔津→喀纳斯一日游",
+                distance: "340km",
+                time: "往返",
+                points: [
+                    { name: "布尔津县", coord: [86.861031, 47.701529], type: "start" },
+                    { name: "贾登峪", coord: [87.005736, 48.588425], type: "pass" },
+                    { name: "喀纳斯", coord: [87.043465, 48.707302], type: "scenic" }
+                ],
+                routes: [
+                    {
+                        path: [
+                            [86.861031, 47.701529],
+                            [86.9, 47.95],
+                            [86.95, 48.2],
+                            [87.005736, 48.588425],
+                            [87.043465, 48.707302]
+                        ],
+                        road: "S232"
+                    },
+                    {
+                        path: [
+                            [87.043465, 48.707302],
+                            [87.005736, 48.588425],
+                            [86.95, 48.2],
+                            [86.9, 47.95],
+                            [86.861031, 47.701529]
+                        ],
+                        road: "S232返回"
+                    }
+                ],
+                details: "⚠️ 建议报当地一日游团（含越野车+向导），冬季雪景绝美",
+                color: "#2196F3"
+            },
+            {
+                day: "Day 4",
+                date: "12月17日",
+                title: "布尔津→魔鬼城→奎屯",
+                distance: "380km",
+                time: "4.5小时",
+                points: [
+                    { name: "布尔津县", coord: [86.861031, 47.701529], type: "start" },
+                    { name: "世界魔鬼城", coord: [85.047932, 45.788026], type: "scenic" },
+                    { name: "奎屯市", coord: [84.903267, 44.426529], type: "hotel" }
+                ],
+                routes: [
+                    {
+                        path: [
+                            [86.861031, 47.701529],
+                            [86.5, 47.3],
+                            [86.0, 46.8],
+                            [85.5, 46.3],
+                            [85.047932, 45.788026]
+                        ],
+                        road: "S319→S201"
+                    },
+                    {
+                        path: [
+                            [85.047932, 45.788026],
+                            [85.0, 45.2],
+                            [84.95, 44.8],
+                            [84.903267, 44.426529]
+                        ],
+                        road: "S201→G3014"
+                    }
+                ],
+                details: "09:00出发 → 11:30魔鬼城游玩2.5h → 15:00前往奎屯 → 17:30抵达",
+                color: "#2196F3"
+            },
+            {
+                day: "Day 5",
+                date: "12月18日",
+                title: "奎屯→赛里木湖→伊宁",
+                distance: "520km",
+                time: "7.5小时",
+                points: [
+                    { name: "奎屯市", coord: [84.903267, 44.426529], type: "start" },
+                    { name: "赛里木湖", coord: [81.151559, 44.596675], type: "scenic" },
+                    { name: "霍尔果斯口岸", coord: [80.417818, 44.213994], type: "pass" },
+                    { name: "伊宁市", coord: [81.317946, 43.916823], type: "hotel" }
+                ],
+                routes: [
+                    {
+                        path: [
+                            [84.903267, 44.426529],
+                            [84.5, 44.45],
+                            [84.0, 44.48],
+                            [83.5, 44.52],
+                            [83.0, 44.55],
+                            [82.5, 44.58],
+                            [82.0, 44.6],
+                            [81.5, 44.6],
+                            [81.151559, 44.596675]
+                        ],
+                        road: "G30"
+                    },
+                    {
+                        path: [
+                            [81.151559, 44.596675],
+                            [81.067891, 44.425533],
+                            [80.8, 44.35],
+                            [80.5, 44.28],
+                            [80.417818, 44.213994],
+                            [80.6, 44.1],
+                            [80.9, 44.0],
+                            [81.317946, 43.916823]
+                        ],
+                        road: "G30→G3016"
+                    }
+                ],
+                details: "08:00出发 → 11:00赛里木湖游玩3h（冰封湖面） → 途经霍尔果斯 → 17:00抵达伊宁",
+                color: "#4CAF50"
+            },
+            {
+                day: "Day 6",
+                date: "12月19日",
+                title: "伊宁→乌鲁木齐",
+                distance: "680km",
+                time: "8小时",
+                points: [
+                    { name: "伊宁市", coord: [81.317946, 43.916823], type: "start" },
+                    { name: "果子沟大桥", coord: [81.067891, 44.425533], type: "scenic" },
+                    { name: "石河子市", coord: [86.041075, 44.305886], type: "pass" },
+                    { name: "乌鲁木齐", coord: [87.617733, 43.792818], type: "hotel" }
+                ],
+                routes: [
+                    {
+                        path: [
+                            [81.317946, 43.916823],
+                            [81.067891, 44.425533],
+                            [81.5, 44.45],
+                            [82.0, 44.48],
+                            [82.5, 44.5],
+                            [83.0, 44.48],
+                            [83.5, 44.46],
+                            [84.0, 44.44],
+                            [84.5, 44.42],
+                            [85.0, 44.38],
+                            [85.5, 44.35],
+                            [86.041075, 44.305886],
+                            [86.5, 44.25],
+                            [87.0, 44.15],
+                            [87.3, 44.0],
+                            [87.617733, 43.792818]
+                        ],
+                        road: "G3016→G30"
+                    }
+                ],
+                details: "08:00出发 → 途经果子沟大桥拍照 → 石河子午餐休息 → 18:00抵达乌鲁木齐",
+                color: "#4CAF50"
+            },
+            {
+                day: "Day 7",
+                date: "12月20日",
+                title: "乌鲁木齐市区游+还车",
+                distance: "0km",
+                points: [
+                    { name: "新疆博物馆", coord: [87.632087, 43.787763], type: "scenic" },
+                    { name: "国际大巴扎", coord: [87.632308, 43.809074], type: "scenic" },
+                    { name: "乌鲁木齐", coord: [87.617733, 43.792818], type: "hotel" }
+                ],
+                routes: [],
+                details: "09:00博物馆 → 14:00大巴扎购物 → 17:00还车 → 机场附近住宿",
+                color: "#9E9E9E"
+            }
         ];
+
+        // 存储所有路线和标记
+        let allPolylines = [];
+        let allRouteMarkers = [];
+        let allPointMarkers = [];
+        let currentActiveDay = null;
+
+        // 切换详情显示
+        window.toggleDetails = function() {
+            const panel = document.getElementById('infoPanel');
+            const toggleText = document.getElementById('toggleText');
+            
+            panel.classList.toggle('collapsed');
+            
+            if (panel.classList.contains('collapsed')) {
+                toggleText.textContent = '查看详细行程';
+            } else {
+                toggleText.textContent = '收起详细行程';
+            }
+        };
 
         // 初始化地图
         const map = new AMap.Map('container', {
@@ -150,79 +769,290 @@
             center: [86.5, 45.5],
             mapStyle: 'amap://styles/whitesmoke',
             viewMode: '3D',
-            pitch: 40
+            pitch: 35
         });
 
-        // 绘制线路
-        const path = routePoints.map(point => point.coord);
-        const polyline = new AMap.Polyline({
-            path: path,
-            strokeColor: '#FF5722',
-            strokeWeight: 6,
-            strokeOpacity: 0.9,
-            lineJoin: 'round',
-            lineCap: 'round',
-            showDir: true
-        });
-        polyline.setMap(map);
+        // 绘制所有路线
+        function drawRoutes() {
+            itinerary.forEach((day, dayIndex) => {
+                if (day.routes && day.routes.length > 0) {
+                    day.routes.forEach((route) => {
+                        // 绘制路线
+                        const polyline = new AMap.Polyline({
+                            path: route.path,
+                            strokeColor: day.color,
+                            strokeWeight: 7,
+                            strokeOpacity: 0.9,
+                            lineJoin: 'round',
+                            lineCap: 'round',
+                            showDir: true,
+                            dirColor: day.color,
+                            zIndex: 50
+                        });
+                        polyline.setMap(map);
+                        polyline.dayId = day.day;
+                        allPolylines.push(polyline);
 
-        // 添加标记点
-        routePoints.forEach((point, index) => {
-            const marker = new AMap.Marker({
-                position: point.coord,
-                title: point.name,
-                label: {
-                    content: `<div style="background: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; border: 2px solid #4CAF50;">${index + 1}</div>`,
-                    offset: new AMap.Pixel(-15, -35)
+                        // 添加路线标签
+                        const midIndex = Math.floor(route.path.length / 2);
+                        const midPoint = route.path[midIndex];
+                        const routeMarker = new AMap.Marker({
+                            position: midPoint,
+                            content: `<div style="background: ${day.color}; color: white; padding: 6px 12px; border-radius: 6px; font-size: 13px; white-space: nowrap; box-shadow: 0 3px 10px rgba(0,0,0,0.4); font-weight: bold;">${route.road}</div>`,
+                            offset: new AMap.Pixel(-40, -10),
+                            zIndex: 100
+                        });
+                        routeMarker.setMap(map);
+                        routeMarker.dayId = day.day;
+                        allRouteMarkers.push(routeMarker);
+                    });
                 }
             });
+
+            // 隐藏加载提示
+            document.getElementById('loading').style.display = 'none';
             
-            marker.setMap(map);
+            // 自动适配视野
+            setTimeout(() => {
+                map.setFitView(null, false, [150, 100, 150, 100]);
+            }, 300);
+        }
+
+        // 显示指定天的路线
+        window.showDayRoute = function(dayId) {
+            // 更新按钮状态
+            document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
             
-            // 点击标记显示信息窗体
-            marker.on('click', () => {
-                const infoWindow = new AMap.InfoWindow({
-                    content: `<div style="padding: 10px;"><h3 style="margin: 0 0 8px 0; color: #333;">${point.name}</h3><p style="margin: 0; color: #666;">${point.desc}</p></div>`,
-                    offset: new AMap.Pixel(0, -30)
-                });
-                infoWindow.open(map, point.coord);
+            // 更新日程列表高亮
+            document.querySelectorAll('.day-section').forEach(section => {
+                section.classList.remove('active');
             });
+            document.querySelector(`[data-day="${dayId}"]`)?.classList.add('active');
+
+            currentActiveDay = dayId;
+
+            // 隐藏所有路线和标记
+            allPolylines.forEach(polyline => {
+                if (polyline.dayId === dayId) {
+                    polyline.show();
+                    polyline.setOptions({
+                        strokeWeight: 8,
+                        strokeOpacity: 1,
+                        zIndex: 100
+                    });
+                } else {
+                    polyline.setOptions({
+                        strokeWeight: 3,
+                        strokeOpacity: 0.2,
+                        zIndex: 10
+                    });
+                }
+            });
+
+            allRouteMarkers.forEach(marker => {
+                if (marker.dayId === dayId) {
+                    marker.show();
+                } else {
+                    marker.hide();
+                }
+            });
+
+            // 定位到该天的路线
+            const day = itinerary.find(d => d.day === dayId);
+            if (day && day.points && day.points.length > 0) {
+                const bounds = new AMap.Bounds();
+                day.points.forEach(point => {
+                    bounds.extend(point.coord);
+                });
+                map.setBounds(bounds, false, [150, 100, 150, 100]);
+            }
+        };
+
+        // 显示所有路线
+        window.showAllRoutes = function() {
+            // 更新按钮状态
+            document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // 清除日程高亮
+            document.querySelectorAll('.day-section').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            currentActiveDay = null;
+
+            allPolylines.forEach(polyline => {
+                polyline.show();
+                polyline.setOptions({
+                    strokeWeight: 7,
+                    strokeOpacity: 0.9,
+                    zIndex: 50
+                });
+            });
+
+            allRouteMarkers.forEach(marker => {
+                marker.show();
+            });
+
+            // 适配所有路线
+            setTimeout(() => {
+                map.setFitView(null, false, [150, 100, 150, 100]);
+            }, 300);
+        };
+
+        // 清空所有路线
+        window.clearAllRoutes = function() {
+            // 更新按钮状态
+            document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // 清除日程高亮
+            document.querySelectorAll('.day-section').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            currentActiveDay = null;
+
+            allPolylines.forEach(polyline => {
+                polyline.setOptions({
+                    strokeWeight: 3,
+                    strokeOpacity: 0.15,
+                    zIndex: 10
+                });
+            });
+
+            allRouteMarkers.forEach(marker => {
+                marker.hide();
+            });
+        };
+
+        // 添加标记点
+        let markerIndex = 1;
+        const addedLocations = new Set();
+
+        itinerary.forEach((day) => {
+            if (day.points) {
+                day.points.forEach((point) => {
+                    const locationKey = `${point.coord[0]},${point.coord[1]}`;
+                    
+                    if (!addedLocations.has(locationKey)) {
+                        addedLocations.add(locationKey);
+                        
+                        let iconStyle = '';
+                        let labelContent = '';
+                        
+                        switch(point.type) {
+                            case 'airport':
+                                iconStyle = 'background: #2196F3; border: 3px solid white;';
+                                labelContent = '✈️';
+                                break;
+                            case 'scenic':
+                                iconStyle = 'background: #FF5722; border: 3px solid white;';
+                                labelContent = markerIndex++;
+                                break;
+                            case 'hotel':
+                                iconStyle = 'background: #4CAF50; border: 3px solid white;';
+                                labelContent = '🏨';
+                                break;
+                            case 'pass':
+                                iconStyle = 'background: #FFC107; border: 3px solid white;';
+                                labelContent = '📍';
+                                break;
+                            default:
+                                iconStyle = 'background: #9E9E9E; border: 3px solid white;';
+                                labelContent = markerIndex++;
+                        }
+                        
+                        const marker = new AMap.Marker({
+                            position: point.coord,
+                            title: point.name,
+                            zIndex: 200,
+                            label: {
+                                content: `<div style="${iconStyle} color: white; padding: 8px 12px; border-radius: 50%; font-size: 13px; font-weight: bold; box-shadow: 0 3px 10px rgba(0,0,0,0.4);">${labelContent}</div>`,
+                                offset: new AMap.Pixel(-18, -40)
+                            }
+                        });
+                        
+                        marker.setMap(map);
+                        allPointMarkers.push(marker);
+                        
+                        // 点击标记显示信息
+                        marker.on('click', () => {
+                            const dayInfo = itinerary.find(d => 
+                                d.points && d.points.some(p => 
+                                    p.coord[0] === point.coord[0] && p.coord[1] === point.coord[1]
+                                )
+                            );
+                            
+                            let content = `<div class="amap-info-content">
+                                <h3 style="margin: 0 0 8px 0; color: #333; font-size: 16px;">${point.name}</h3>`;
+                            
+                            if (dayInfo) {
+                                content += `<p style="margin: 0; color: #666; font-size: 13px; line-height: 1.6;">
+                                    <strong>${dayInfo.day}</strong> ${dayInfo.date}<br>
+                                    ${dayInfo.title}<br>`;
+                                
+                                if (dayInfo.distance && dayInfo.distance !== '0km') {
+                                    content += `📏 ${dayInfo.distance} | ⏱️ ${dayInfo.time}`;
+                                }
+                                
+                                content += `</p>`;
+                            }
+                            
+                            content += `</div>`;
+                            
+                            const infoWindow = new AMap.InfoWindow({
+                                content: content,
+                                offset: new AMap.Pixel(0, -30)
+                            });
+                            infoWindow.open(map, point.coord);
+                        });
+                    }
+                });
+            }
         });
 
         // 生成侧边栏列表
-        const stopsList = document.getElementById('stopsList');
-        routePoints.forEach((point, index) => {
-            const li = document.createElement('li');
-            li.className = 'stop-item';
-            li.innerHTML = `
-                <div class="stop-name">${index + 1}. ${point.name}</div>
-                <div class="stop-desc">${point.desc}</div>
+        const daysList = document.getElementById('daysList');
+        itinerary.forEach((day) => {
+            const section = document.createElement('div');
+            section.className = 'day-section';
+            section.setAttribute('data-day', day.day);
+            
+            let routeInfo = '';
+            if (day.routes && day.routes.length > 0) {
+                day.routes.forEach(route => {
+                    routeInfo += `
+                        <div class="route-item">
+                            <span class="route-icon">🛣️</span>
+                            <span><span class="road-tag">${route.road}</span></span>
+                        </div>
+                    `;
+                });
+            }
+            
+            section.innerHTML = `
+                <div class="day-header" onclick="showDayRoute('${day.day}')">
+                    <div>
+                        <div class="day-title">${day.day} ${day.date}</div>
+                        <div style="font-size: 13px; color: #666; margin-top: 4px;">${day.title}</div>
+                    </div>
+                    <div class="day-badge">${day.distance || '休息'}</div>
+                </div>
+                <div class="route-details">
+                    ${routeInfo}
+                    <div style="margin-top: 8px; color: #555;">📝 ${day.details}</div>
+                </div>
             `;
             
-            // 点击列表项定位到地图
-            li.addEventListener('click', () => {
-                map.setZoomAndCenter(12, point.coord);
-                
-                // 高亮当前项
-                document.querySelectorAll('.stop-item').forEach(item => {
-                    item.classList.remove('active');
-                });
-                li.classList.add('active');
-                
-                // 显示信息窗体
-                const infoWindow = new AMap.InfoWindow({
-                    content: `<div style="padding: 10px;"><h3 style="margin: 0 0 8px 0; color: #333;">${point.name}</h3><p style="margin: 0; color: #666;">${point.desc}</p></div>`,
-                    offset: new AMap.Pixel(0, -30)
-                });
-                infoWindow.open(map, point.coord);
-            });
-            
-            stopsList.appendChild(li);
+            daysList.appendChild(section);
         });
 
-        // 自适应显示所有点
-        map.setFitView();
+        // 开始绘制路线
+        drawRoutes();
+
+        // 默认收起详情
+        document.getElementById('infoPanel').classList.add('collapsed');
     </script>
 </body>
 </html>
-
