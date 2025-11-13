@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>北疆自驾线路图</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        #container {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .info-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            max-width: 320px;
+            max-height: 80vh;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+        
+        .info-panel h1 {
+            font-size: 24px;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+        
+        .info-panel .subtitle {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .route-info {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .route-info h3 {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .route-info p {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .stops-list {
+            list-style: none;
+        }
+        
+        .stop-item {
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .stop-item:hover {
+            background: #e8f5e9;
+            transform: translateX(4px);
+        }
+        
+        .stop-item.active {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .stop-name {
+            font-weight: 600;
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+        
+        .stop-desc {
+            font-size: 13px;
+            opacity: 0.8;
+        }
+        
+        @media (max-width: 768px) {
+            .info-panel {
+                max-width: calc(100% - 40px);
+                max-height: 50vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+    
+    <div class="info-panel">
+        <h1>🚗 北疆自驾线路</h1>
+        <p class="subtitle">探索新疆最美风景线</p>
+        
+        <div class="route-info">
+            <h3>📍 线路概况</h3>
+            <p>总里程：约 2000 公里<br>建议天数：10-12 天<br>最佳季节：6-10 月</p>
+        </div>
+        
+        <h3 style="margin-bottom: 12px; color: #333;">途经站点</h3>
+        <ul class="stops-list" id="stopsList"></ul>
+    </div>
+
+    <script src="https://webapi.amap.com/maps?v=2.0&key=3ca8cc9763f49795910439ccf62e51ae&plugin=AMap.Driving"></script>
+    <script>
+        // 线路节点数据
+        const routePoints = [
+            { name: "乌鲁木齐", coord: [87.617733, 43.792818], desc: "起点 - 新疆首府" },
+            { name: "天山天池", coord: [88.136353, 43.883669], desc: "高山湖泊，雪峰倒影" },
+            { name: "富蕴可可托海", coord: [89.524232, 47.168751], desc: "额尔齐斯河大峡谷" },
+            { name: "布尔津", coord: [86.861031, 47.701529], desc: "童话小镇" },
+            { name: "喀纳斯", coord: [87.043465, 48.707302], desc: "神的后花园" },
+            { name: "禾木村", coord: [87.009355, 48.675636], desc: "图瓦人村落" },
+            { name: "克拉玛依魔鬼城", coord: [85.047932, 45.788026], desc: "雅丹地貌奇观" },
+            { name: "赛里木湖", coord: [81.151559, 44.596675], desc: "大西洋最后一滴眼泪" },
+            { name: "伊犁霍城薰衣草", coord: [80.874155, 44.055586], desc: "中国普罗旺斯" },
+            { name: "那拉提草原", coord: [83.696485, 43.333333], desc: "空中草原" },
+            { name: "巴音布鲁克", coord: [84.149542, 43.040251], desc: "九曲十八弯" },
+            { name: "独库公路", coord: [84.149542, 42.5], desc: "中国最美公路" },
+            { name: "乌鲁木齐", coord: [87.617733, 43.792818], desc: "终点 - 返回" }
+        ];
+
+        // 初始化地图
+        const map = new AMap.Map('container', {
+            zoom: 6,
+            center: [86.5, 45.5],
+            mapStyle: 'amap://styles/whitesmoke',
+            viewMode: '3D',
+            pitch: 40
+        });
+
+        // 绘制线路
+        const path = routePoints.map(point => point.coord);
+        const polyline = new AMap.Polyline({
+            path: path,
+            strokeColor: '#FF5722',
+            strokeWeight: 6,
+            strokeOpacity: 0.9,
+            lineJoin: 'round',
+            lineCap: 'round',
+            showDir: true
+        });
+        polyline.setMap(map);
+
+        // 添加标记点
+        routePoints.forEach((point, index) => {
+            const marker = new AMap.Marker({
+                position: point.coord,
+                title: point.name,
+                label: {
+                    content: `<div style="background: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; border: 2px solid #4CAF50;">${index + 1}</div>`,
+                    offset: new AMap.Pixel(-15, -35)
+                }
+            });
+            
+            marker.setMap(map);
+            
+            // 点击标记显示信息窗体
+            marker.on('click', () => {
+                const infoWindow = new AMap.InfoWindow({
+                    content: `<div style="padding: 10px;"><h3 style="margin: 0 0 8px 0; color: #333;">${point.name}</h3><p style="margin: 0; color: #666;">${point.desc}</p></div>`,
+                    offset: new AMap.Pixel(0, -30)
+                });
+                infoWindow.open(map, point.coord);
+            });
+        });
+
+        // 生成侧边栏列表
+        const stopsList = document.getElementById('stopsList');
+        routePoints.forEach((point, index) => {
+            const li = document.createElement('li');
+            li.className = 'stop-item';
+            li.innerHTML = `
+                <div class="stop-name">${index + 1}. ${point.name}</div>
+                <div class="stop-desc">${point.desc}</div>
+            `;
+            
+            // 点击列表项定位到地图
+            li.addEventListener('click', () => {
+                map.setZoomAndCenter(12, point.coord);
+                
+                // 高亮当前项
+                document.querySelectorAll('.stop-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                li.classList.add('active');
+                
+                // 显示信息窗体
+                const infoWindow = new AMap.InfoWindow({
+                    content: `<div style="padding: 10px;"><h3 style="margin: 0 0 8px 0; color: #333;">${point.name}</h3><p style="margin: 0; color: #666;">${point.desc}</p></div>`,
+                    offset: new AMap.Pixel(0, -30)
+                });
+                infoWindow.open(map, point.coord);
+            });
+            
+            stopsList.appendChild(li);
+        });
+
+        // 自适应显示所有点
+        map.setFitView();
+    </script>
+</body>
+</html>
+
